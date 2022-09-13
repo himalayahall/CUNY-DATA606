@@ -6,10 +6,12 @@ output:
   
   pdf_document: 
     toc: true
+    toc_depth: 3
     number_sections: true
   html_document:
     
     toc: true
+    toc_depth: 3
     toc_float: true
     number_sections: true
 boxlinks: true
@@ -23,6 +25,8 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Analysis
+
 Load required packages.
 
 ```{r message=FALSE}
@@ -31,11 +35,16 @@ library(openintro)
 ```
 
 Load *nycflights* data.
+
 ```{r load-nycflights}
 data("nycflights")
 ```
 
-# Exercise 1
+## Departure delays
+
+### Exercise 1
+
+Look carefully at these three histograms. How do they compare? Are features revealed in one that are obscured in another?  
 
 ```{r plot-dep-delays}
 ggplot(data = nycflights, aes(x = dep_delay)) +
@@ -48,62 +57,51 @@ ggplot(data = nycflights, aes(x = dep_delay)) +
   geom_histogram(binwidth = 150)
 ```
 
-The *binwidth* parameter of *geom_histogrm* function has an impact on the *granualarity* (level of detail) of the resulting plot. First plot has (default) *binwidth=30*. The second plot, has *binwidth=15* and shows the fine-grained details of the underlying observations. The third plot has large bins, *binwidth=150*, and masks the underlying details. 
+The *binwidth* parameter of *geom_histogrm* function has an impact on the *granualarity* (level of detail) of the resulting plot. First plot has (default) *binwidth=30*. The second plot, has *binwidth=15* and shows the fine-grained details of the underlying observations. The third plot has large bins, *binwidth=150*, and masks the underlying details.   
 
-Compared to smaller bins, larger bins mask the  variations in the underlying observations. 
+Compared to smaller bins, larger bins mask details of variations in the underlying observations. 
 
-# Exercise 2
+### Exercise 2
 
 Create a new data frame that includes flights headed to SFO in February, and save this data frame as sfo_feb_flights. How many flights meet these criteria?
 
-There were *68* flights departing for SFO in February. 
+Let's filter the observations for flights to SFO in February. There were *68* flights departing for SFO in February. 
 
-```{r sfo-flights-in-feb}
+```{r flights--to-sfo-in-feb}
 sfo_feb_flights <- nycflights %>% 
-    filter(dest == "SFO", month == 2) # Case insensitive filtering using grepl
+    filter(dest == "SFO", month == 2)
 glimpse(sfo_feb_flights)
 ```
 
-# Exercise 3
+### Exercise 3
 
-Describe the distribution of the arrival delays of these flights using a histogram and appropriate summary statistics. Hint: The summary statistics you use should depend on the shape of the distribution.
+Describe the distribution of the arrival delays of these flights using a histogram and appropriate summary statistics. Hint: The summary statistics you use should depend on the shape of the distribution.  
 
-Let's plot the *arrival delay* of flights to SFO. We will use a fine-grained *binwidth = 5* because there are relatively few observations (*68*) and we want to see detailed shape of the distribution.
+Let's plot the arrival delay of flights to SFO. We will use a fine-grained *binwidth = 5* because there are relatively few observations (68) and we want to see detailed shape of the distribution.
 
 ```{r plot-arr-delay-in-feb}
 ggplot(data = sfo_feb_flights, aes(x = arr_delay)) +
   geom_histogram(binwidth = 10)
 
 ```
-The *arrival delay* for SFO bound flights has outliers on the right. Due to outliers in the observations,  *IQR* and *median* are better descriptive stat than *mean*.
+The arrival delay for SFO bound flights is skewed with a long right tail. Due to the skeweness, *mean* is not a good measure of central tendency. The *median* is a better measure. For the same reason, the spread in the data is captured better with *IQR* compared to *standard deviation*. The *min* and *max* are appropriate measures of range.
 
-To verify our visual observation, lets compute summary stats. The *median=-11*, *IQR=23.25*, *mean=-4.5*, *min=-66*, *max=196*. This is in line with the visual observations about outliers.
+To verify our visual observation, lets compute summary stats. The *median=-11*, *IQR=23.25*, *min=-66*, *max=196*. This is in line with the visual observations about outliers. 
 
 ```{r summarise-arr-delay-in-feb}
 sfo_feb_flights %>% 
-    summarise(median_dd = median(arr_delay), 
+    summarise(
               irq_dd = IQR(arr_delay), 
-              mean_dd = mean(arr_delay),
+              median_dd = median(arr_delay), 
               min_dd = min(arr_delay), 
-              max_dd = max(arr_delay))
+              max_dd = max(arr_delay)
+             )
 ```
-But is it good news for passengers from ALL NYC area airports? Let's find out. With smaller *IQR* and *min/max spread* for arrival delay, SFO bound passengers departing from *EWR* are likely to have a better overall flying experience than *JFK* passengers.
+### Exercise 4
 
-```{r summarise-arr-delay-in-feb-bi-airport}
-sfo_feb_flights %>% 
-    group_by(origin) %>% 
-    summarise(median_dd = median(arr_delay), 
-              iqr_dd = IQR(arr_delay), 
-              min_dd = min(arr_delay), 
-              max_dd = max(arr_delay),
-              spread_dd = max_dd - min_dd)
+Calculate the median and interquartile range (IQR) for arr_delays of flights in  the sfo_feb_flights data frame, grouped by carrier. Which carrier has the most variable arrival delays?  
 
-```
-# Exercise 4
-
-Calculate the median and interquartile range (IQR) for arr_delays of flights in in the sfo_feb_flights data frame, grouped by carrier. Which carrier has the most variable arrival delays?
-
-DL and UA are *tied* for highest IRQ, with VX a close third. Of the 2 carriers with the highest IQR, UA has the largest *min/max spread*. So UA is the carrier with the most variable arrival delays.
+DL and UA are *tied* for the most variable delays because their IRQs are tied for the highest at *22.0* (with VX a close third). This suggests that both carriers exhibit the greatest variation in arrival delays for the middle *50%* of their respective observations.
 
 ```{r}
 sfo_feb_flights %>%
@@ -117,28 +115,34 @@ sfo_feb_flights %>%
     arrange(desc(iqr_dd))
 ```
 
-# Exercise 5
+## Departure delays by month
 
-Suppose you really dislike departure delays and you want to schedule your travel in a month that minimizes your potential departure delay leaving NYC. One option is to choose the month with the lowest mean departure delay. Another option is to choose the month with the lowest median departure delay. What are the pros and cons of these two choices?
+### Exercise 5
 
-Mean Pro: It tells you what is the average amount of departure delay over the whole data set.
-Mean Con: It can be heavily by skewed by outliers in the observations.
+Suppose you really dislike departure delays and you want to schedule your travel in a month that minimizes your potential departure delay leaving NYC. One option is to choose the month with the lowest mean departure delay. Another option is to choose the month with the lowest median departure delay. What are the pros and cons of these two choices?  
 
-Median Pro: Not impacted by outliers in observations, tell you that half of the time departure will be less (greater) than the median.
-Mean Con: Does not give a sense of how the data is distributed. For example, the median departure delay of observations *[0, 10, 20, 30, 500, 1000, 2000]* is *30*, but it is grossly misleading.  
+**Mean**:  
+    Pro: It tells you what is the average departure delay over the whole data set.  
+    Con: It can get skewed by outliers in the observations.  
 
-# Exercise 6
+**Median**:  
+    Pro: Not impacted by outliers in observations, tell you that half of the time departure will be less than (greater than) than the median.  
+    Con: Does not give a sense of how the data is distributed. For example, the median departure delay of a hypothetical dataset with an odd number of observations *[-60, -30, -20, 30, 500, 1000, 2000]*, is *30*. It conveys no information about the spread or range.
 
-If you were selecting an airport simply based on on-time departure percentage, which NYC airport would you choose to fly out of?
+## On time departure rates for NYC airports
 
-Let's assume a flight that leaves 5 minutes after scheduled departure is considered delayed. Let's compute on-time departures.
+### Exercise 6
+
+If you were selecting an airport simply based on on-time departure percentage, which NYC airport would you choose to fly out of?  
+
+Let's compute on-time departures, assuming a flight that leaves up to 5 minutes after scheduled departure is considered on time.
 
 ```{r compute-ontime}
 nycflights <- nycflights %>% 
     mutate(dep_type = ifelse(dep_delay <= 5, "on time", "delayed"))
 ```
 
-Now we compute the on-time departure percentage for all airports. Based on the on-time departure percentages, I would fly out of (in order): LGA, JFK, EWR.
+Now compute on-time departure percentage for all airports. Based on these on-time departure percentages, I would prefer flying out of NYC airports in following order of preference (first to last): LGA, JFK, EWR.
 
 ```{r compute-ontime-percentage}
 nycflights %>% 
@@ -147,43 +151,42 @@ nycflights %>%
     arrange(desc(ot_dep_rate))
 ```
 
-A picture is worth a thousand words. A quick visual inspection shows that LGA has best proportion of flights leaving on time.
+A picture is worth a thousand words and a quick visual inspection shows that LGA indeed has best proportion of flights leaving on time.
 
 ```{r plot-ontime-percentage}
 ggplot(data = nycflights, aes(x = origin, fill = dep_type)) +
   geom_bar()
 ```
 
-# Exercise 7
+# More Practice
 
-Mutate the data frame so that it includes a new variable that contains the average speed, avg_speed traveled by the plane for each flight (in mph). Hint: Average speed can be calculated as distance divided by number of hours of travel, and note that air_time is given in minutes.
+## Exercise 7
 
-Computation: group by *flight*, summsarise sums of *air_time* and *distance*, and finally compute the *ave_speed* (making sure to convert *air_time* from *minutes* to *hours*).
+Mutate the data frame so that it includes a new variable that contains the average speed, avg_speed traveled by the plane for each flight (in mph). Hint: Average speed can be calculated as distance divided by number of hours of travel, and note that air_time is given in minutes.  
 
 ```{r compute-avg-speed}
 nycflights <- nycflights %>%
-    group_by(flight) %>%  
-    mutate(avg_speed = 60 * (distance / air_time)) %>%  # Compute avg_speed mph
+    mutate(avg_speed = distance / (air_time / 60)) %>%  # Compute avg_speed mph
     arrange(desc(flight))
 ```
-# Exercise 8
+## Exercise 8
 
-Make a scatterplot of avg_speed vs. distance. Describe the relationship between average speed and distance. Hint: Use geom_point().
+Make a scatterplot of avg_speed vs. distance. Describe the relationship between average speed and distance. Hint: Use geom_point().  
 
-Average speed is directly proportional to distance. Longer (shorter) distance flights have faster (slower) average speed. The relationship **is not** liner,  the average speed tapers off as the distances get greater.
+Average speed is proportional to distance, longer (shorter) distance flights have faster (slower) average speed. However, the increase in average speed with distance tapers off as distance increases. It seems the relationship may be modeled as a *logarithmic* function.
 
 ```{r plot-dist-avgspeed}
 nycflights %>% 
     ggplot(aes(x = distance, y = avg_speed)) + geom_point()
 ```
 
-# Exercise 9
+## Exercise 9
 
-Replicate the following plot. Hint: The data frame plotted only contains flights from American Airlines, Delta Airlines, and United Airlines, and the points are colored by carrier. Once you replicate the plot, determine (roughly) what the cutoff point is for departure delays where you can still expect to get to your destination on time.
+Replicate the following plot. Hint: The data frame plotted only contains flights from American Airlines, Delta Airlines, and United Airlines, and the points are colored by carrier. Once you replicate the plot, determine (roughly) what the cutoff point is for departure delays where you can still expect to get to your destination on time.  
 
-From the plot the maximum departure delay, for still getting to the destination on time, is approximately 60 minutes (look at the *horizontal line* where *arr_delay = 0*. Move along the line to the right, until the last point on line).
+From the plot the maximum departure delay, for still getting to the destination on time, is approximately 60 minutes (look at the *horizontal line* where *arr_delay = 0*. Move along the line to the right, until the last point on line).  
 
-However, for these 3 airlines, a majority of flights departing exactly on time (*dep_delay = 0*) nonetheless arrived late (*arr_delay > 0*). Assuming an arrival delay of [10-20] minutes is acceptable, flights would have to depart approximately 10 minutes *before* scheduled departure to arrive 'on time'. 
+However, for these 3 airlines, a majority of flights departing exactly on time (*dep_delay = 0*) nonetheless arrived late (*arr_delay > 0*). For this data set, flights would have to depart approximately *10* minutes *before* scheduled departure to arrive 'on time'. 
 
 ```{r replicate-plot}
 nycflights %>% 
