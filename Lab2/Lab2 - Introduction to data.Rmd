@@ -101,7 +101,7 @@ sfo_feb_flights %>%
 
 Calculate the median and interquartile range (IQR) for arr_delays of flights in  the sfo_feb_flights data frame, grouped by carrier. Which carrier has the most variable arrival delays?  
 
-DL and UA are *tied* for the most variable delays because their IRQs are tied for the highest at *22.0* (with VX a close third). This suggests that both carriers exhibit the greatest variation in arrival delays for the middle *50%* of their respective observations.
+DL and UA are *tied* for the most variable delays because their IRQs are tied for the highest at *22.0* (with VX a close third). This suggests that both carriers exhibit the greatest variation in arrival delays for the middle *50%* of their respective observations. However, the *spread* in UA arrival delays is much higher than DL, therefore UA exhibits the highest variability.
 
 ```{r}
 sfo_feb_flights %>%
