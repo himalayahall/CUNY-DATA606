@@ -47,7 +47,7 @@ glimpse(kobe_basket)
 
 > What does a streak length of 1 mean, i.e. how many hits and misses are in a streak of 1? What about a streak length of 0?  
 
-A *streak* can be represented by regular expression H*M - i.e. 0 or more hits followed by 1 miss. A streak of length 1 contains exactly 1 hit followed by 1 miss. A streak of length 0 contains 1 miss and 0 hits.
+The length of a streak is the number of hits in that streak and can be represented by the regular expression H*M - i.e. 0 or more hits followed by 1 miss. A streak of length 1 contains exactly 1 hit followed by 1 miss. A streak of length 0 contains 0 hits and 1 miss.
 
 # Exercise 2
 
@@ -66,14 +66,14 @@ ggplot(data = kobe_streak, aes(x = length)) +
 
 > Describe the distribution of Kobe’s streak lengths from the 2009 NBA finals. What was his typical streak length? How long was his longest streak of baskets? Make sure to include the accompanying plot in your answer.
 
-There is a clear peak (streak of length 0) on left and a tail (streak of length 4) on the right. This is not a normal distribution, looks like a *unimodal* distribution.
+There is a clear peak (streaks of length 0) on left and a tail (streaks of length 4) on the right. This is not a normal distribution, looks like a *unimodal* distribution.
 
 The typical streak (mode) was of length  0 - i.e. 0 hits. The longest (max) streak was of length 4.
 
-```{r}
+```{r find-mode}
 my.mode <- function (v) {
-     uniqv <- unique(v)
-    uniqv[which.max(tabulate(match(v, uniqv)))]
+    uv <- unique(v)
+    uv[which.max(tabulate(match(v, uv)))]
 }
 
 my.mode(kobe_streak$length)
@@ -87,13 +87,15 @@ max(kobe_streak$length)
 ```{r}
 coin_outcomes <- c('heads', 'tails')
 set.seed(1981)
-sim_unfair_coin <- sample(coin_outcomes, size = 100, replace = TRUE, 
+sim_unfair_coin <- sample(coin_outcomes, 
+                          size = 100, 
+                          replace = TRUE, 
                           prob = c(0.2, 0.8))
 ```
 
 > In your simulation of flipping the unfair coin 100 times, how many flips came up heads? Include the code for sampling the unfair coin in your response. Since the markdown file will run the code, and generate a new sample each time you Knit it, you should also “set a seed” before you sample. Read more about setting a seed below.
 
-In simulation of flipping unfair coin 100 times, 14 flips came up heads.
+In simulation of flipping the unfair coin 100 times, 14 flips came up heads.
 
 ```{r}
 set.seed(1981)
@@ -110,7 +112,7 @@ length(sim_unfair_coin[sim_unfair_coin == 'heads'])
 
 # Exercise 4
 
-> Simulating a basketball player who has independent shots uses the same mechanism that you used to simulate a coin flip. To simulate a single shot from an independent shooter with a shooting percentage of 50% you can type
+> Simulating a basketball player who has independent shots uses the same mechanism that you used to simulate a coin flip. To simulate a single shot from an independent shooter with a shooting percentage of 50% you can type:
 
 ```{r}
 shot_outcomes <- c("H", "M")           # H = Hit, M = Miss
@@ -157,13 +159,15 @@ max(sim_streak$length)
 
 > If you were to run the simulation of the independent shooter a second time, how would you expect its streak distribution to compare to the distribution from the question above? Exactly the same? Somewhat similar? Totally different? Explain your reasoning. 
 
-Both distributions should be identicale since we explicitly set the seed of the random number generator. If the seed was removed (or modified) then the streak distribution would be different.
+Both distributions should be identical since we explicitly set the seed of the random number generator. If the seed was removed (or modified) then the streak distribution would be similar but not identical. This variation is an inherent property of the random number generator used for the simulation. 
 
 # Exercise 8
 
 > How does Kobe Bryant’s distribution of streak lengths compare to the distribution of streak lengths for the simulated shooter? Using this comparison, do you have evidence that the hot hand model fits Kobe’s shooting patterns? Explain.  
 
-Both distributions look *unimodel*, are right skewed, and have mode equal to 0. Stream lengths of the two distributions, although not identical, are also very similar. For example, unlike the simulated shooter, who has 0 streaks of length 4, Kobe has 1 streak of length 4.
+Both distributions look *unimodel*, are right skewed, and have mode equal to 0. Stream lengths of the two distributions, although not identical, are  similar. For example, unlike the simulated shooter, who has 0 streaks of length 4, Kobe has 1 streak of length 4.
+
+One would expect significant number of longer streaks if the hot hand model was valid. We can conclude that Kobe's streaks are random and not due to a hot hand.
 
 ```{r}
 kobe_streak_counts <- table(kobe_streak$length)
@@ -172,8 +176,5 @@ kobe_streak_counts
 sim_streak_counts <-table(sim_streak$length)
 sim_streak_counts
 ```
-
-
-We can conclude that Kobe's streaks are random and not due to a hot hand.
 
 
