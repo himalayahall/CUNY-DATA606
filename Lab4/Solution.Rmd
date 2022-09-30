@@ -1,0 +1,68 @@
+---
+title: "Solution"
+author: "Jawaid Hakim"
+date: "`r Sys.Date()`"
+  
+  html_document:
+    
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: true
+  pdf_document: 
+    toc: true
+    toc_depth: 3
+    number_sections: true
+boxlinks: true
+urlcolor: blue
+always_allow_html: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(openintro)
+```
+
+```{r}
+data("fastfood", package='openintro')
+head(fastfood)
+```
+
+```{r}
+mcdonalds <- fastfood %>%
+  filter(restaurant == "Mcdonalds")
+
+dairy_queen <- fastfood %>%
+  filter(restaurant == "Dairy Queen")
+```
+
+```{r}
+dqmean <- mean(dairy_queen$cal_fat)
+dqmean
+dqsd   <- sd(dairy_queen$cal_fat)
+dqsd
+```
+
+```{r}
+ggplot(data = dairy_queen, aes(x = cal_fat)) +
+        geom_blank() +
+        geom_histogram(aes(y = ..density..)) +
+        stat_function(fun = dnorm, args = c(mean = dqmean, sd = dqsd), col = "tomato")
+```
+
+## Exrcise 1
+
+For a normal distribution we would expect to find 65% observation centered around the mean, 95% within 1 SD from the mean, and 99% within 2 SD from mean.  
+
+The mean for this distribution is 260 and SD is 156. 
+
+```{r}
+x = rnorm(NROW(dairy_queen), dqmean, dqsd)
+y = dairy_queen$cal_fat
+qqplot(x, y, xlab = "Normal Distribution", ylab = "Urban Population", main = "Q-Q Plot")
+```
+
+Based on this plot the distribution does seem to be normal: clustering of values around the mean (260), majority of observations within 2 standard deviation (156) of the mean: [-52, 573].
