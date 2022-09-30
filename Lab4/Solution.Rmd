@@ -40,6 +40,11 @@ dairy_queen <- fastfood %>%
 ```
 
 ```{r}
+mcmean <- mean(mcdonalds$cal_fat)
+mcmean
+mcsd   <- sd(mcdonalds$cal_fat)
+mcsd
+
 dqmean <- mean(dairy_queen$cal_fat)
 dqmean
 dqsd   <- sd(dairy_queen$cal_fat)
@@ -53,16 +58,94 @@ ggplot(data = dairy_queen, aes(x = cal_fat)) +
         stat_function(fun = dnorm, args = c(mean = dqmean, sd = dqsd), col = "tomato")
 ```
 
-## Exrcise 1
-
-For a normal distribution we would expect to find 65% observation centered around the mean, 95% within 1 SD from the mean, and 99% within 2 SD from mean.  
-
-The mean for this distribution is 260 and SD is 156. 
 
 ```{r}
-x = rnorm(NROW(dairy_queen), dqmean, dqsd)
-y = dairy_queen$cal_fat
-qqplot(x, y, xlab = "Normal Distribution", ylab = "Urban Population", main = "Q-Q Plot")
+ggplot(data = mcdonalds, aes(x = cal_fat)) +
+        geom_blank() +
+        geom_histogram(aes(y = ..density..)) +
+        stat_function(fun = dnorm, args = c(mean = mcmean, sd = mcsd), col = "blue")
 ```
 
-Based on this plot the distribution does seem to be normal: clustering of values around the mean (260), majority of observations within 2 standard deviation (156) of the mean: [-52, 573].
+## Exercise 1
+
+Make a plot (or plots) to visualize the distributions of the amount of calories from fat of the options from these two restaurants. How do their centers, shapes, and spreads compare? 
+
+Means of the Mcdonalds and Dairy Queen distributions are similar, 285 and 260 respectively. However, Mcdonalds has a larger spread (221) compared to Dairy Queen (156). 
+
+```{r}
+mcdonalds <- fastfood %>%
+  filter(restaurant == "Mcdonalds")
+
+mcmean <- round(mean(mcdonalds$cal_fat), 1)
+mcsd   <- round(sd(mcdonalds$cal_fat), 1)
+
+dairy_queen <- fastfood %>%
+  filter(restaurant == "Dairy Queen")
+
+dqmean <- round(mean(dairy_queen$cal_fat), 1)
+dqsd   <- round(sd(dairy_queen$cal_fat), 1)
+
+print(sprintf("Mcdonalds Mean: %f, SD: %f", mcmean, mcsd))
+print(sprintf("Dairy Queen Mean: %f, SD: %f", dqmean, dqsd))
+#y = 
+#qqnorm(dairy_queen$cal_fat)
+#qqline(dairy_queen$cal_fat)
+```
+
+Let's plot fat calories from the two restaurants. Both plots look like Normal distributions, with Mcdonalds showing greater spread.
+
+```{r}
+ggplot(data = mcdonalds, aes(x = cal_fat, y = ..density..)) +
+        ggtitle('Mcdonalds Calories from Fat') + 
+         geom_histogram() 
+```
+
+```{r}
+ggplot(data = dairy_queen, aes(x = cal_fat, y = ..density..)) +
+       ggtitle('Dairy Queen Calories from Fat') + 
+         geom_histogram() 
+
+```
+
+## Exercise 2
+
+Let's plot the calorie fat observations for Mcdonalds along with the density curve. There is close fit between the two plots.
+
+```{r}
+ggplot(data = mcdonalds, aes(x = cal_fat)) +
+        geom_blank() +
+        geom_histogram(aes(y = ..density..)) +
+        stat_function(fun = dnorm, args = c(mean = mcmean, sd = mcsd), col = "blue")
+```
+
+Let's plot the calorie fat observations for Dairy Queen along with the density curve. Again, there is a good fit between the two plots.  
+
+Based on these plots one can conclude that distribution of calories from fat, for both restaurants, is Normal.
+
+```{r}
+ggplot(data = dairy_queen, aes(x = cal_fat)) +
+        geom_blank() +
+        geom_histogram(aes(y = ..density..)) +
+        stat_function(fun = dnorm, args = c(mean = dqmean, sd = dqsd), col = "red")
+```
+
+## Exercise 3
+
+Let's plot the Normal probability plots of real data and a simulated distribution with same mean and standard deviation.  
+
+Plots are not identical - real data has outliers on the upper tail. Still, plot for the real data looks close enough to Normal.
+
+```{r}
+ggplot(data = dairy_queen, aes(sample = cal_fat)) + 
+  geom_line(stat = "qq")
+```
+
+```{r}
+
+sim_norm <- rnorm(n = nrow(dairy_queen), mean = dqmean, sd = dqsd)
+ggplot(data = NULL, aes(sample = sim_norm)) + 
+  geom_line(stat = "qq")
+```
+
+## Exercise 4
+
