@@ -163,6 +163,24 @@ Although the probabilities are not exactly the same, they are reasonably close. 
 
 >Write out two probability questions that you would like to answer about any of the restaurants in this dataset. Calculate those probabilities using both the theoretical normal distribution as well as the empirical distribution (four probabilities in all). Which one had a closer agreement between the two methods?
 
+What is the probability that an item picked at random at Mcdonalds will have less than 0.5 grams of trans fat?
+
+```{r}
+mcmean_sodium <- mean(mcdonalds$trans_fat)
+mcmean_sodium
+
+mcsd_sodium   <- sd(mcdonalds$trans_fat)
+mcsd_sodium
+```
+
+Let's first figur eout if trans fat is a Normal distribution at Macdonalds.
+
+```{r}
+set.seed(1832)
+qqnormsim(sample = trans_fat, data = mcdonalds)
+
+```
+
 
 ## Exercise 7
 
@@ -185,15 +203,8 @@ ggplot(data = dairy_queen, aes(sample = sodium)) + geom_line(stat = "qq")
 ```
 
 ```{r}
-mcmean_sodium <- mean(mcdonalds$sodium)
-mcmean_sodium
-
-mcsd_sodium   <- sd(mcdonalds$sodium)
-mcsd_sodium
-
 ggplot(data = mcdonalds, aes(sample = sodium)) + geom_line(stat = "qq")
 ```
-
 
 ## Exercise 8
 
@@ -218,7 +229,7 @@ ggplot(data = dairy_queen, aes(sample = total_carb)) + geom_line(stat = "qq")
 
 ```
 
-Let's plat a histogram to verify right skew. Histogram confirms a long right tail. 
+Let's plat a histogram to verify right skew. Histogram confirms right skewed. 
 
 ```{r}
 ggplot(dairy_queen, aes(x=total_carb)) + geom_histogram(binwidth = 5)
