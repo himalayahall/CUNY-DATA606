@@ -67,7 +67,27 @@ dqsd
 
 > Make a plot (or plots) to visualize the distributions of the amount of calories from fat of the options from these two restaurants. How do their centers, shapes, and spreads compare? 
 
-Let's plot density curve of fat calories from the two restaurants. Both plots appear to be Normal distributions, with Mcdonalds showing higher mean and also greater spread.
+Let's plot density curve of fat calories from the two restaurants. Both plots appear to be Normal distributions, with Mcdonalds showing higher mean and greater spread.
+
+```{r}
+gghistogram(dairy_queen, 
+            x = "cal_fat", 
+            fill = "blue",
+            add = "mean", 
+            title  = 'Dairy Queen')
+
+```
+
+```{r}
+gghistogram(mcdonalds, 
+            x = "cal_fat", 
+            fill = "orange",
+            add = "mean", 
+            title  = 'Mcdonalds')
+
+```
+
+We can also plot the density curves, overlaid with the Normal probability curve, for both restaurants. This supports the Normality hypothesis of the two distributions.
 
 ```{r}
 dqplot <- ggdensity(dairy_queen,
@@ -115,7 +135,6 @@ ggplot(data = dairy_queen, aes(x = cal_fat)) +
 Most, not all, points fall along the center line, as one would expect from a small set of observations. This plot approximates the Normal distribution.
 
 ```{r}
-set.seed(1832)
 sim_norm <- rnorm(n = nrow(dairy_queen), mean = dqmean, sd = dqsd)
 
 ggplot(data = NULL, aes(sample = sim_norm)) + 
@@ -126,22 +145,22 @@ ggplot(data = NULL, aes(sample = sim_norm)) +
 
 >Does the normal probability plot for the calories from fat look similar to the plots created for the simulated data? That is, do the plots provide evidence that the calories are nearly normal?
 
-The plots provide strong evidence that calories from fat for Dairy Queen are close to Normal.
+Both plots look Normal although the normal probability plot for the calories from fat shows stepwise behavior and skewness on the right.
 
 ```{r}
-set.seed(1832)
-qqnormsim(sample = cal_fat, data = dairy_queen)
+ggplot(data = dairy_queen, aes(sample = cal_fat)) + 
+  geom_line(stat = "qq")
 ```
 
 # Exercise 5
 
 >Using the same technique, determine whether or not the calories from McDonald’s menu appear to come from a normal distribution.
 
-Again, the plots provide strong evidence that calories from fat for Mcdonals are also close to Normal.
+The plot provides evidence that calories from fat for Mcdonals have a Normal distribution.
 
 ```{r}
-set.seed(1832)
-qqnormsim(sample = cal_fat, data = mcdonalds)
+ggplot(data = mcdonalds, aes(sample = cal_fat)) + 
+  geom_line(stat = "qq")
 ```
 
 >It turns out that statisticians know a lot about the normal distribution. Once you decide that a random variable is approximately normal, you can answer all sorts of questions about that variable related to probability. Take, for example, the question of, “What is the probability that a randomly chosen Dairy Queen product has more than 600 calories from fat?”
