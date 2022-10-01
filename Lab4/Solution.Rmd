@@ -21,6 +21,8 @@ editor_options:
   chunk_output_type: console
 ---
 
+# Setup
+
 ## Load packages
 
 ```{r setup, include=FALSE}
@@ -30,7 +32,8 @@ library(ggpubr)
 library(openintro)
 ```
 
-## Load data
+# Load data
+
 ```{r}
 data("fastfood", package='openintro')
 head(fastfood)
@@ -60,7 +63,7 @@ dqsd   <- sd(dairy_queen$cal_fat)
 dqsd
 ```
 
-## Exercise 1
+# Exercise 1
 
 > Make a plot (or plots) to visualize the distributions of the amount of calories from fat of the options from these two restaurants. How do their centers, shapes, and spreads compare? 
 
@@ -90,7 +93,7 @@ mdplot <- mdplot +
 ggarrange(dqplot, mdplot)
 ```
 
-## Exercise 2
+# Exercise 2
 
 >Based on the this plot, does it appear that the data follow a nearly normal distribution?
 
@@ -105,7 +108,7 @@ ggplot(data = dairy_queen, aes(x = cal_fat)) +
         stat_function(fun = dnorm, args = c(mean = dqmean, sd = dqsd), col = "tomato")
 ```
 
-## Exercise 3
+# Exercise 3
 
 >Make a normal probability plot of sim_norm. Do all of the points fall on the line? How does this plot compare to the probability plot for the real data? (Since sim_norm is not a data frame, it can be put directly into the sample argument and the data argument can be dropped.)
 
@@ -119,7 +122,7 @@ ggplot(data = NULL, aes(sample = sim_norm)) +
   geom_line(stat = "qq")
 ```
 
-## Exercise 4
+# Exercise 4
 
 >Does the normal probability plot for the calories from fat look similar to the plots created for the simulated data? That is, do the plots provide evidence that the calories are nearly normal?
 
@@ -130,7 +133,7 @@ set.seed(1832)
 qqnormsim(sample = cal_fat, data = dairy_queen)
 ```
 
-## Exercise 5
+# Exercise 5
 
 >Using the same technique, determine whether or not the calories from McDonald’s menu appear to come from a normal distribution.
 
@@ -159,21 +162,11 @@ dairy_queen %>%
 
 Although the probabilities are not exactly the same, they are reasonably close. The closer that your distribution is to being normal, the more accurate the theoretical probabilities will be.
 
-## Exercise 6
+# Exercise 6
 
 >Write out two probability questions that you would like to answer about any of the restaurants in this dataset. Calculate those probabilities using both the theoretical normal distribution as well as the empirical distribution (four probabilities in all). Which one had a closer agreement between the two methods?
 
-What is the probability that an item picked at random at Mcdonalds will have less than 0.5 grams of trans fat?
-
-```{r}
-mcmean_sodium <- mean(mcdonalds$trans_fat)
-mcmean_sodium
-
-mcsd_sodium   <- sd(mcdonalds$trans_fat)
-mcsd_sodium
-```
-
-Let's first figur eout if trans fat is a Normal distribution at Macdonalds.
+Let's first figure out if trans fat is a Normal distribution at Macdonalds. It has a definite stepwise shape but  looks Normal.
 
 ```{r}
 set.seed(1832)
@@ -181,24 +174,78 @@ qqnormsim(sample = trans_fat, data = mcdonalds)
 
 ```
 
+## What is the probability that an item selected Mcdonalds will have less than 1.0 grams of trans fat?
 
-## Exercise 7
+First, we use pnorm to compute the probability of an item at Mcdonalds containing less than 1.0 grams of trans fat.
+
+```{r}
+mcmean_trans_fat <- mean(mcdonalds$trans_fat)
+mcmean_trans_fat
+
+mcsd_trans_fat   <- sd(mcdonalds$trans_fat)
+mcsd_trans_fat
+
+pnorm(q = 1.0, mean = mcmean_trans_fat, sd = mcsd_trans_fat)
+```
+
+Next, we compute the probability explicitly from the data. There is close agreement between the two numbers.
+
+```{r}
+mcdonalds %>% 
+  filter(trans_fat < 1.0) %>%
+  summarise(percent = n() / nrow(mcdonalds))
+```
+
+## What is the probability that an item selected Mcdonalds will have greater than 500 calories?
+
+Let's first figure out if calories is a Normal distribution at Macdonalds. Looks Normal.
+
+```{r}
+set.seed(1832)
+qqnormsim(sample = calories, data = mcdonalds)
+```
+
+Compute probability using pnorm.
+
+```{r}
+mcmean_calories <- mean(mcdonalds$calories)
+mcmean_calories
+
+mcsd_calories   <- sd(mcdonalds$calories)
+mcsd_calories
+
+1 - pnorm(q = 500, mean = mcmean_calories, sd = mcsd_calories)
+```
+
+Next, we compute the probability explicitly from the data. There is close agreement between the two numbers.
+
+```{r}
+mcdonalds %>% 
+  filter(calories > 500) %>%
+  summarise(percent = n() / nrow(mcdonalds))
+```
+
+# Exercise 7
 
 >Now let’s consider some of the other variables in the dataset. Out of all the different restaurants, which ones’ distribution is the closest to normal for sodium?
 
-Let's do qq-plot for sodium content of items from both restaurants.  
+Let's do qq-plot for sodium content of items from both restaurants. 
 
-First we compute the mean and standard deviation of sodium for both restaurants.
+First, for Dairy Queen.
+
+```{r}
+qqnormsim(sample = sodium, data = dairy_queen)
+```
+
+Next, for Mcdonalds.
+
+```{r}
+qqnormsim(sample = sodium, data = mcdonalds)
+```
 
 Let's verify that the sodium distributions are Normal using the qq-plots. The two distributions appear to be normal but contains *steps*, i.e. large gradations.
 
 ```{r}
-dqmean_sodium <- mean(dairy_queen$sodium) # mean for sodium
-dqmean_sodium
-
-dqsd_sodium   <- sd(dairy_queen$sodium)   # sd
-dqsd_sodium
-
 ggplot(data = dairy_queen, aes(sample = sodium)) + geom_line(stat = "qq")
 ```
 
@@ -206,30 +253,31 @@ ggplot(data = dairy_queen, aes(sample = sodium)) + geom_line(stat = "qq")
 ggplot(data = mcdonalds, aes(sample = sodium)) + geom_line(stat = "qq")
 ```
 
-## Exercise 8
+# Exercise 8
 
 > Note that some of the normal probability plots for sodium distributions seem to have a stepwise pattern. why do you think this might be the case?
 
-Step wise pattern might be due to large **jumps** in sodium content of items. One possible explanation for might be if reported sodium content is being rounded up/down. 
+Step wise pattern might be due to large **jumps** in sodium content of items. Let's sort the sodium data to see if it is the case.  
 
-## Exercise 9
+We see large jumps from 1980 to 2607, from 26to to 3230, from 3370 to 3770, from 3770 to 4450, and from 4450 to 6080.
+
+```{r}
+sort(mcdonalds$sodium)
+```
+
+# Exercise 9
 
 >As you can see, normal probability plots can be used both to assess normality and visualize skewness. Make a normal probability plot for the total carbohydrates from a restaurant of your choice. Based on this normal probability plot, is this variable left skewed, symmetric, or right skewed? Use a histogram to confirm your findings.
 
 Let's look at total carbs at Dairy Queen. First we make sure that carbs distribution is Normal. It does look Normal and appears to be skewed on the right.
 
 ```{r}
-dqmean_carb <- mean(dairy_queen$total_carb) # mean for sodium
-dqmean_carb
-
-dqmean_carb   <- sd(dairy_queen$total_carb)   # sd
-dqmean_carb
-
 ggplot(data = dairy_queen, aes(sample = total_carb)) + geom_line(stat = "qq")
 
 ```
 
-Let's plat a histogram to verify right skew. Histogram confirms right skewed. 
+The histogram plotconfirms right skewness. 
+
 
 ```{r}
 ggplot(dairy_queen, aes(x=total_carb)) + geom_histogram(binwidth = 5)
