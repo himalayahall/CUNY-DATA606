@@ -25,7 +25,7 @@ editor_options:
 
 ## Load packages
 
-```{r setup, include=FALSE}
+```{r setup}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(ggpubr)
@@ -276,9 +276,9 @@ ggplot(data = mcdonalds, aes(sample = sodium)) + geom_line(stat = "qq")
 
 > Note that some of the normal probability plots for sodium distributions seem to have a stepwise pattern. why do you think this might be the case?
 
-Step wise pattern might be due to large **jumps** in sodium content of items. Let's sort the sodium data to see if it is the case.  
+Step wise pattern might be due to large **jumps** in sodium content of items. Also, the number of observations is quite small, a large set might have made the 'steps' smaller and more smooth.  
 
-We see large jumps from 1980 to 2607, from 26to to 3230, from 3370 to 3770, from 3770 to 4450, and from 4450 to 6080.
+Let's sort the sodium data to see if it is the case. We see large jumps from 1980 to 2607, from 26to to 3230, from 3370 to 3770, from 3770 to 4450, and from 4450 to 6080.
 
 ```{r}
 sort(mcdonalds$sodium)
