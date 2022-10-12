@@ -134,7 +134,9 @@ Depending on which 50 people you selected, your estimate could be a bit above or
 
 ## Exercise 2
 
-Sample proportions of any two students would match exactly if they both used the same random number generator (RNG), same RNG seed, and same sample sizes. This is confirmed by the observation that Lab5a instruction Rmd has the exact same proportions as this solution (they both use the same seed).
+Sample proportions of two students would match if they both used the same random number generator (RNG), had same RNG seed and same sample sizes, and called the RNG in same sequence. This is highly unlikely to occur by chance.
+
+However, if students follow the lab instructions to the letter, including setting the seed to 1234, then it is possible. This is confirmed by the observation that the Lab5a Rmd posted on class website has the exact same proportions as **this** solution (they both use identical RNG and seed).
 
 3.  Take a second sample, also of size 50, and call it `samp2`. How does the sample proportion of `samp2` compare with that of `samp1`? Suppose we took two more samples, one of size 100 and one of size 1000. Which would you think would provide a more accurate estimate of the population proportion?
 
@@ -382,7 +384,7 @@ sample_props15 <- global_monitor %>%
                 filter(scientist_work == "Benefits")
 ```
 
-Next we plot the sample distribution. This distribution is Normal, left skewed. Based on this sampling distribution I would guess the true proportion mean to be approximately 0.75 and 0.8.
+Next we plot the sample distribution. This distribution is Normal, slightly left skewed. Based on this sampling distribution I would guess the true proportion mean to be approximately 0.75 and 0.8.
 
 ```{r}
 ggplot(data = sample_props15, aes(x = p_hat)) +
@@ -419,7 +421,7 @@ sample_props150 <- global_monitor %>%
                 filter(scientist_work == "Benefits")
 ```
 
-Next, plot the sample proportion distribution. This sample distribution is also Normal and  symmetrical. Based on this sampling distribution I would guess the true population proportion to be 0.8 of those who think the work scientists do enhances their lives.
+Next, plot the sample proportion distribution. This sample distribution is also Normal and symmetrical. Based on this sampling distribution I would guess the true population proportion to be 0.8 of those who think the work scientists do enhances their lives.
 
 ```{r}
 ggplot(data = sample_props150, aes(x = p_hat)) +
@@ -434,6 +436,15 @@ ggplot(data = sample_props150, aes(x = p_hat)) +
 
 ## Exercise 10
 
-The spread from the sampling distribution for *sample_props15* is greater than the spread for *sample_props150*. One would prefer a sampling with a small spread.
+I am assuming that this exercise wants to compare the spread from the sampling distributions for *sample_props15* and *sample_props150*. 
+
+Of the two distributions, *sample_props150* has the smaller spread, shorter left/right tails. Since we are estimating the true population mean we would prefer a sampling distribution that is Normal, symmetrical, and small spread.
+
+```{r}
+summary(sample_props15$p_hat)
+summary(sample_props150$p_hat)
+
+```
+
 
 * * *
