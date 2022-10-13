@@ -102,21 +102,15 @@ This command collects a simple random sample of size 50 from the `global_monitor
 
 ## Exercise 1
 
-Let's compute summary stats for the sample distribution. The sample distribution has different proportions from the true population proportion: 74% (Benefits) and 26% (Doesn't Benefit).
+Let's compute summary stats for the sample distribution. The sample distribution has different proportions, 74% (Benefits) and 26% (Doesn't Benefit), from the true population proportions 80% (Benefits) and 20% (Doesn't Benefit).
 
 ```{r}
-samp1 %>%
-  count(scientist_work = scientist_work) %>%
-  mutate(phat = n /sum(n))
-```
-
-If you're interested in estimating the proportion of all people who do not believe that the work scientists do benefits them, but you do not have access to the population data, your best single guess is the sample mean.
-
-```{r phat-samp1}
 samp1 %>%
   count(scientist_work) %>%
   mutate(p_hat = n /sum(n))
 ```
+
+If you're interested in estimating the proportion of all people who do not believe that the work scientists do benefits them, but you do not have access to the population data, your best single guess is the sample mean.
 
 ```{r inline-calc, include=FALSE}
 # For use inline below
@@ -166,7 +160,7 @@ sample_props50 <- global_monitor %>%
 
 And we can visualize the distribution of these proportions with a histogram.
 
-```{r fig.show="hide"}
+```{r}
 ggplot(data = sample_props50, aes(x = p_hat)) +
   geom_histogram(binwidth = 0.02) +
   labs(
@@ -181,9 +175,7 @@ Next, you will review how this set of code works.
 
 4.  How many elements are there in `sample_props50`?  Describe the sampling distribution, and be sure to specifically note its center. Make sure to include a plot of the distribution in your answer.
 
-In *sample_prop50* there are 15000 rows and 4 columns for a total of 60000 elements.  
-
-The sampling distribution looks Normal with a center around 0.20.
+In *sample_prop50* there are 15,000 rows (elements), one per sample. The sampling distribution looks Normal with a center around 0.20.
 
 ## Interlude: Sampling distributions
 
@@ -211,7 +203,7 @@ Note that for each of the 15,000 times we computed a proportion, we did so from 
 
 There are 23 rows in *sample_props_small* and each observation represents that sample's proportion of *Doesn't Benefit*.  
 
-It's surprising there are only 23 rows since we requested 25 samples. My assumption is that 2 samples did not contain any *Doesn't Benefit* observations and were discarded due of divide by 0 error. Increasing the *sample size* will increase the probability of at least 1 *Doesn't Benefit* in every sample.
+It's surprising there are only 23 rows since we requested 25 samples. My guess is that 2 out of 25 samples did not contain even a single *Doesn't Benefit* observation and got discarded due of divide by 0 error. Increasing the *sample size* will increase the probability of at least 1 *Doesn't Benefit* in every sample.
 
 ```{r}
 sample_props_small <- global_monitor %>%
@@ -241,9 +233,9 @@ In the remainder of this section, you will work on getting a sense of the effect
 
 ## Exercise 6
 
-The sample size has a big impact on sample proportions. Increasing (decreasing) the sample size brings the sample proportion closer (further away) to (from) the population proportion.  
+The sample size has a big impact on sample proportions. Increasing the sample size makes the sample proportion get closer to the true population proportion.  
 
-Increasing the number of samples has a small impact if sample size is low (e.g. 10) but negligible impact on larger sample sizes.
+Increasing the number of samples has an impact if sample sizes are small (e.g. 10) but only marginal impact with large sample sizes.
     
 ```{r shiny, echo=FALSE, eval=FALSE, results = TRUE}
 # This R chunk will only run in interactive mode.
@@ -374,7 +366,7 @@ global_monitor %>%
 
 ## Exercise 8
 
-First we simulate the sampling distribution of proportion of those who think the work scientists do enhances their lives for samples of size 15 by taking 2000 samples from the population of size 15 and computing 2000 sample proportions.
+First we simulate the sampling distribution of proportion of those who think the work scientists do enhances their lives by taking 2000 samples, each of size 15, from the population and computing sample proportions.
 
 ```{r}
 sample_props15 <- global_monitor %>%
@@ -438,7 +430,7 @@ ggplot(data = sample_props150, aes(x = p_hat)) +
 
 I am assuming that this exercise wants to compare the spread from the sampling distributions for *sample_props15* and *sample_props150*. 
 
-Of the two distributions, *sample_props150* has the smaller spread, shorter left/right tails. Since we are estimating the true population mean we would prefer a sampling distribution that is Normal, symmetrical, and small spread.
+Of the two distributions, *sample_props150* has the smaller spread, shorter left/right tails. Since we are estimating the true population mean we would prefer a sampling distribution with a small spread.
 
 ```{r}
 summary(sample_props15$p_hat)
