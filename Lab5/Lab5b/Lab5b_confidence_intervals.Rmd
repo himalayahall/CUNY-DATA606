@@ -2,6 +2,7 @@
 title: 'Foundations for statistical inference - Confidence intervals'
 author: ""
 output:
+  pdf_document: default
   html_document:
     includes:
       in_header: header.html
@@ -10,7 +11,6 @@ output:
     theme: cerulean
     toc: true
     toc_float: true
-  pdf_document: default
 editor_options: 
   chunk_output_type: console
 ---
@@ -99,12 +99,15 @@ samp <- us_adults %>%
     
 ## Exercise 1
 
-In the sample 61.7% adults (p_hat) think climate change affects their local community.
+In the sample 62%  adults (p_hat) think climate change affects their local community.
 
 ```{r}
 samp %>%
     count(climate_change_affects) %>%
-    mutate(p_hat = n / sum(n))
+    mutate(p_hat = n / sum(n)) %>%
+    filter(climate_change_affects == 'Yes') %>%
+    pull(p_hat) %>%
+    round(2)
 ```
 
 
@@ -167,7 +170,7 @@ To recap: even though we don't know what the full population looks like, we're 9
 
 ## Exercise 3
 
-By 95% confidence we mean there is a 95% probability that the confidence interval will contain the true population proportion.
+By 95% confidence we mean there is a 95% probability that the confidence interval contains the true population proportion.
 
 In this case, you have the rare luxury of knowing the true population proportion (62%) since you have data on the entire population. 
 
@@ -330,7 +333,7 @@ In my plot, 96% (48 out of 50) of intervals include the true population proporti
 
 Let's say we pick 99% confidence level, I would expect this interval to be be wider than the 95% confidence interval. This makes sense because the true population mean is more likely (i.e. greater confidence level) to fall within a wider interval.  
 
-In general, the confidence interval will be wider (narrower) for higher (lower) confidence level. 
+In general, the confidence interval will be wider (narrower) for higher (lower) confidence levels. 
 
 1.  Using code from the **infer** package and data from the one sample you have 
     (`samp`), find a confidence interval for the proportion 
@@ -357,7 +360,7 @@ samp %>%
 
 ## Exercise 9
 
-Using a confidence level of 80%, the 43 out of 50 intervals (86%) intervals captured the true population proportion.
+Using a confidence level of 80%, 43 out of 50 intervals (86%) captured the true population proportion.
     
 1.  Lastly, try one more (different) confidence level. First, state how you expect the
     width of this interval to compare to previous ones you calculated. Then, 
@@ -370,15 +373,15 @@ Using a confidence level of 80%, the 43 out of 50 intervals (86%) intervals capt
 
 For this exercise let's pick confidence level of 99%. I would expect the confidence interval to be wider than both 95% and 80% confidence levels. It is indeed wider (0.45, 0.783).
     
-Using the app with 100 intervals, 98 out of 100 intervals (98%) intervals captured the true population proportion.
-    
     ```{r}
 samp %>%
   specify(response = climate_change_affects, success = "Yes") %>%
-  generate(reps = 1000, type = "bootstrap") %>%
+  generate(reps = 100, type = "bootstrap") %>%
   calculate(stat = "prop") %>%
   get_ci(level = 0.99)
 ```
+
+Using the app with 100 intervals, 98 out of 100 intervals (98%) intervals captured the true population proportion.
 
 1.  Using the app, experiment with different sample sizes and comment on how the 
     widths of intervals change as sample size changes (increases and decreases).
@@ -389,7 +392,7 @@ The confidence interval gets tighter (smaller) as the sample size increases. Thi
     as you increase the number of bootstrap samples. **Hint:** Does changing the 
     number of bootstap samples affect the standard error?
 
-Increasing the number of bootstrap samples will give a lower bootstrap standard error value, up to a reasonable number. However, the  improvement in bootstrap standard error beyond 1000 bootstrap samples is marginal at best and not worth the overhead.
+Increasing the number of bootstrap samples will give a lower bootstrap standard error value, up to a reasonable number. However, the improvement in bootstrap SE with greater than 1000 bootstrap samples is  marginal and not worth the overhead.
      
     ```{r}
 samp %>%
