@@ -2,6 +2,7 @@
 title: "Inference for categorical data"
 author: ""
 output:
+  pdf_document: default
   html_document:
     includes:
       in_header: header.html
@@ -10,7 +11,6 @@ output:
     theme: cerulean
     toc: true
     toc_float: true
-  pdf_document: default
 editor_options: 
   chunk_output_type: console
 ---
@@ -69,7 +69,6 @@ yrbss %>%
 Remember that you can use `filter` to limit the dataset to just non-helmet wearers. Here, we will name the dataset `no_helmet`.
 
 ```{r no helmet}
-data('yrbss', package='openintro')
 no_helmet <- yrbss %>%
   filter(helmet_12m == "never")
 ```
@@ -203,7 +202,7 @@ ggplot(data = dd, aes(x = p, y = me)) +
 
 ## Exercise 5
 
-The relationship is quadratic as shown by the upside down parabola. The margin of error is maximized at p = 0.5.
+The relationship is quadratic as shown by the upside down parabola, the ME increases as the population proportion approaches 0.5 from left and from right. The margin of error is maximized at p = 0.5.
 
 ## Success-failure condition
 
@@ -250,17 +249,19 @@ shinyApp(
 6.  Describe the sampling distribution of sample proportions at $n = 300$ and 
     $p = 0.1$. Be sure to note the center, spread, and shape.
     
-    [Foo](ScreenShot.png)
-    
 ## Exercise 6
 
-The sampling distribution of sample proportions at $n = 300$ and $p = 0.1$ is bimodal (has two peaks).
+The sampling distribution of sample proportions at $n = 300$ and $p = 0.1$ is Normal but is not smooth. The center is around 0.1 and mi/max is approximately (0.01, 0.17)
 
 7.  Keep $n$ constant and change $p$. How does the shape, center, and spread 
     of the sampling distribution vary as $p$ changes. You might want to adjust
     min and max for the $x$-axis for a better view of the distribution.
     
 8.  Now also change $n$. How does $n$ appear to affect the distribution of $\hat{p}$?
+
+## Exercise 8
+
+As the sample size increased $\hat{p}$ distribution gets closer to Normal with smaller spread. This is to be expected as the standard error decreases.
 
 * * *
 
@@ -274,12 +275,42 @@ For some of the exercises below, you will conduct inference comparing two propor
     for inference. If you find a significant difference, also quantify this 
     difference with a confidence interval. 
 
-10.  Let's say there has been no difference in likeliness to strength train every
-    day of the week for those who sleep 10+ hours. What is the probablity that
+## Excercise 9
+
+Ho: there is no difference in strength training every day of the week between people who sleep 10+ hours per day and those who don't
+Ha: those who sleep 10+ hours per day are more likely to strength train every day of the week
+
+We are 95% confident the proportion of students who sleep 10+ hours per day and also do strength training every day of the week is between 0.224 and 0.321
+
+```{r sleep-long-train-daily}
+sleep_long <- yrbss %>%
+  filter(school_night_hours_sleep == "10+")
+
+sleep_long <- sleep_long %>%
+                    mutate(train_ind = ifelse(strength_training_7d == "7", "yes", "no"))
+```
+
+```{r ci-sleep-long-train-daily}
+sleep_long %>%
+  filter(! is.na(train_ind)) %>%
+  specify(response = train_ind, success = "yes") %>%
+  generate(reps = 1000, type = "bootstrap") %>%
+  calculate(stat = "prop") %>%
+  get_ci(level = 0.95)
+
+```
+
+
+10. Let's say there has been no difference in likeliness to strength train every
+    day of the week for those who sleep 10+ hours. What is the probability that
     you could detect a change (at a significance level of 0.05) simply by chance?
     *Hint:* Review the definition of the Type 1 error.
 
-11.  Suppose you're hired by the local government to estimate the proportion of 
+## Exercise 10
+
+The probability that we could detect a change (at a significance level of 0.05) simply by chance. i.e. a Type 1 error (rejecting the null Hypothesis when it is true), could occur with a probability of 5%.
+
+11. Suppose you're hired by the local government to estimate the proportion of 
     residents that attend a religious service on a weekly basis. According to 
     the guidelines, the estimate must have a margin of error no greater than 
     1% with 95% confidence. You have no idea what to expect for $p$. How many 
@@ -287,5 +318,31 @@ For some of the exercises below, you will conduct inference comparing two propor
     guidelines?\
     *Hint:* Refer to your plot of the relationship between $p$ and margin of 
     error. This question does not require using a dataset.
+    
+## Exercise 11
+
+From earlier plot we know that worst case ME is when $p$ is 0.5. Let's use $ME = 0.01$ and $p = 0.5$ to solve for $n$. Based on these assumptions we would want a sample size that is the *minimum* of 9604 and 10% of total population.
+
+$$
+ME = 1.96\times SE = 1.96\times\sqrt{p(1-p)/n}
+$$
+$$
+0.01 = 1.96\times\sqrt{0.5(1-0.5)\over n}
+$$
+
+$$
+0.01^2 = 1.96^2\times {0.5(1-0.5)\over n}
+$$
+
+$$
+n = {1.96^2\times{0.5 (1-0.5)}\over0.01^2}
+$$
+
+$$
+n = {3.8416\times{0.25}\over0.0001}
+$$
+$$
+n = 9604
+$$
 
 * * *
