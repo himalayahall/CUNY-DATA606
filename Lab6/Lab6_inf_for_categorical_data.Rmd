@@ -277,6 +277,8 @@ For some of the exercises below, you will conduct inference comparing two propor
 
 ## Excercise 9
 
+Explanatory variable is 'those who sleep 10+ hours per day', response variable is 'strength train every day of the week'.
+
 Ho: there is no difference in strength training every day of the week between people who sleep 10+ hours per day and those who don't
 Ha: those who sleep 10+ hours per day are more likely to strength train every day of the week
 
@@ -284,22 +286,21 @@ We are 95% confident the proportion of students who sleep 10+ hours per day and 
 
 ```{r sleep-long-train-daily}
 sleep_long <- yrbss %>%
-  filter(school_night_hours_sleep == "10+")
-
+                    filter(! is.na(school_night_hours_sleep)) %>%
+                    filter(school_night_hours_sleep == "10+")
 sleep_long <- sleep_long %>%
-                    mutate(train_ind = ifelse(strength_training_7d == "7", "yes", "no"))
+                    filter(! is.na(strength_training_7d)) %>%
+                    mutate(train_daily_ind = ifelse(strength_training_7d == "7", "yes", "no"))
 ```
 
 ```{r ci-sleep-long-train-daily}
 sleep_long %>%
-  filter(! is.na(train_ind)) %>%
-  specify(response = train_ind, success = "yes") %>%
+  specify(response = train_daily_ind, success = 'yes') %>%
   generate(reps = 1000, type = "bootstrap") %>%
   calculate(stat = "prop") %>%
   get_ci(level = 0.95)
 
 ```
-
 
 10. Let's say there has been no difference in likeliness to strength train every
     day of the week for those who sleep 10+ hours. What is the probability that
