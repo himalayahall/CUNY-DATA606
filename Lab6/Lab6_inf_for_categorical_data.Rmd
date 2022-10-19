@@ -124,7 +124,7 @@ good_sleep_ind <- yrbss %>%
 
 ```
 
-Next, compute proportion confidence intervals. The 95% confidence level for the proportion of students with good sleep habits (8 hours or more nightly sleep) based on this survey is (0.298, 0.313).  
+Next, compute proportion confidence intervals. The 95% confidence level for the proportion of students with good sleep habits (8 hours or more nightly sleep) based on this survey is (0.298, 0.314).  
 
 We can be 95% confident that the population proportion of students with good sleep habits is between 29.8% and 31.4%.
 
@@ -251,12 +251,16 @@ shinyApp(
     
 ## Exercise 6
 
-The sampling distribution of sample proportions at $n = 300$ and $p = 0.1$ is Normal but is not smooth. The center is around 0.1 and mi/max is approximately (0.01, 0.17)
+The sampling distribution of sample proportions at $n = 300$ and $p = 0.1$ is Normal but not smooth. The center is around 0.1 and min/max is approximately (0.01, 0.17)
 
 7.  Keep $n$ constant and change $p$. How does the shape, center, and spread 
     of the sampling distribution vary as $p$ changes. You might want to adjust
     min and max for the $x$-axis for a better view of the distribution.
-    
+ 
+## Exercise 7
+
+Increasing the population proportion makes the distribution closer to Normal up to 0.5. Increasing beyond 0.5 makes the distribution no longer be Normal.
+ 
 8.  Now also change $n$. How does $n$ appear to affect the distribution of $\hat{p}$?
 
 ## Exercise 8
@@ -282,24 +286,69 @@ Explanatory variable is 'those who sleep 10+ hours per day', response variable i
 Ho: there is no difference in strength training every day of the week between people who sleep 10+ hours per day and those who don't
 Ha: those who sleep 10+ hours per day are more likely to strength train every day of the week
 
-We are 95% confident the proportion of students who sleep 10+ hours per day and also do strength training every day of the week is between 0.224 and 0.321
-
 ```{r sleep-long-train-daily}
-sleep_long <- yrbss %>%
+sleep_exercise <- yrbss %>%
                     filter(! is.na(school_night_hours_sleep)) %>%
-                    filter(school_night_hours_sleep == "10+")
-sleep_long <- sleep_long %>%
                     filter(! is.na(strength_training_7d)) %>%
+                    mutate(sleep_long_ind = ifelse(school_night_hours_sleep == "10+", "yes", "no")) %>%
                     mutate(train_daily_ind = ifelse(strength_training_7d == "7", "yes", "no"))
 ```
 
-```{r ci-sleep-long-train-daily}
-sleep_long %>%
-  specify(response = train_daily_ind, success = 'yes') %>%
-  generate(reps = 1000, type = "bootstrap") %>%
-  calculate(stat = "prop") %>%
-  get_ci(level = 0.95)
+Let's see a quick barplot with normalized within-group percentages. It appears there is a difference in strength training every day of the week between people who sleep 10+ hours per day and those who don't.
 
+```{r barplot}
+sleep_exercise %>% 
+  select(train_daily_ind, school_night_hours_sleep) %>% 
+  ggplot(aes(x=school_night_hours_sleep, fill = train_daily_ind)) + 
+  geom_bar(position = "fill") +
+  ylab("within group percentage")
+```
+
+Since both variables, $train_daily_ind$ and $sleep_long_ind$, are categorical we can use the Chi-square test framework. The assumption for Chi-square testing are:
+
+1. Both variables are categorical. Check.
+1. All observations are independent. Check.
+1. It’s assumed that individuals can only belong to one cell in the contingency table. That is, cells in the table are mutually exclusive – an individual cannot belong to more than one cell. Check.
+1. There must be at least 5 frequencies in each cell. Check.
+
+Calculate observed Chisq statistic. It is 85.8.
+
+```{r observed-stat}
+observed_indep_statistic <- sleep_exercise %>%
+    specify(train_daily_ind ~ sleep_long_ind, success = "yes") %>%
+    #specify(train_daily_ind ~ school_night_hours_sleep) %>%
+    hypothesize(null = "independence") %>%
+    calculate(stat = "Chisq")
+
+observed_indep_statistic
+```
+
+Generate the null distribution by permuting the response and explanatory variables. The null distribution is what we  would expect to see if the two variables were truly independent.
+
+```{r}
+null_dist_sim <- sleep_exercise %>%
+  specify(train_daily_ind ~ sleep_long_ind, success = "yes") %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "Chisq")
+```
+
+Let's plot the simulated null distribution.
+
+```{r}
+null_dist_sim %>%
+  visualize(method = "both") + 
+  shade_p_value(observed_indep_statistic,
+                direction = "greater")
+```
+
+Plot of simulated null distribution shows that the observed test statistic would be unlikely if there was no association between 10+ hours of sleep each day and exercising 7 days a week.
+
+```{r}
+p_value_independence <- null_dist_sim %>%
+  get_p_value(obs_stat = observed_indep_statistic,
+              direction = "greater")
+p_value_independence
 ```
 
 10. Let's say there has been no difference in likeliness to strength train every
