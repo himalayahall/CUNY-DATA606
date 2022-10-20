@@ -311,7 +311,7 @@ Since both variables, $train_daily_ind$ and $sleep_long_ind$, are categorical we
 1. It’s assumed that individuals can only belong to one cell in the contingency table. That is, cells in the table are mutually exclusive – an individual cannot belong to more than one cell. Check.
 1. There must be at least 5 frequencies in each cell. Check.
 
-Calculate observed Chisq statistic. It is 85.8.
+Calculate observed Chisq statistic. It is 23.2
 
 ```{r observed-stat}
 observed_indep_statistic <- sleep_exercise %>%
