@@ -98,10 +98,15 @@ yrbss <- yrbss %>%
 
 # Exercise 3
 
-There seems to be little to no relationship between `physical_3plus` and `weight`. I was not expecting there to be much relationship except, perhaps, at the extreme weight outliers since one can imagine outliers experiencing related health issues that might prevent them from exercising more often.
+There seems to be no relationship between `physical_3plus` and `weight`. I was not expecting there to be much relationship except, perhaps, at the extreme weight outliers since it's possible that high schoolers who are extremely overweight might experience related health issues that might prevent them from exercising more often.
 
 ```{r}
-boxplot(yrbss$weight ~ yrbss$physical_3plus, col="orange", main="Weight and Physical 3 Plus", ylab="Weight", xlab="Phy Active 3+ Days", horizontal = FALSE) 
+boxplot(yrbss$weight ~ yrbss$physical_3plus, 
+        col="orange", 
+        main="Weight and Physical 3 Plus",
+        ylab="Weight", 
+        xlab="Phy Active 3+ Days", 
+        horizontal = FALSE) 
 ```
 
 The box plots show how the medians of the two distributions compare, but we can also compare the means of the distributions using the following to first group the data by the `physical_3plus` variable, and then calculate the mean `weight` in these groups using the `mean` function while ignoring missing values by setting the `na.rm` argument to `TRUE`.
@@ -135,7 +140,7 @@ yrbss %>%
 
 # Exercise 5
 
->Ho: the average weight of those who exercise at least 3 times a week $=$ average weight of those who don't exercise at lesst 3 times a week
+>Ho: the average weight of those who exercise at least 3 times a week $=$ average weight of those who don't exercise at least 3 times a week
 
 >H1: the average weight of those who exercise at least 3 times a week $\ne$ average weight of those who don't exercise at lesst 3 times a week
 
@@ -167,7 +172,7 @@ null_dist <- yrbss %>%
 
 Here, `hypothesize` is used to set the null hypothesis as a test for independence. In one sample cases, the `null` argument can be set to "point" to test a hypothesis relative to a point estimate.
 
-Also, note that the `type` argument within `generate` is set to `permute`, whichis the argument when generating a null distribution for a hypothesis test.
+Also, note that the `type` argument within `generate` is set to `permute`, which is the argument when generating a null distribution for a hypothesis test.
 
 We can visualize this null distribution with the following code:
 
@@ -178,6 +183,16 @@ ggplot(data = null_dist, aes(x = stat)) +
 
 
 6. How many of these `null` permutations have a difference of at least `obs_stat`?
+
+# Exercise 6
+
+There are no `null` permutations that have a difference greater than or equal to `obs_stat`.
+
+```{r}
+null_dist%>%
+    filter(stat>=obs_diff) %>%
+    tally()
+```
 
 Now that the test is initialized and the null distribution formed, you can calculate the p-value for your hypothesis test using the function `get_p_value`.
 
@@ -190,18 +205,330 @@ This the standard workflow for performing hypothesis tests.
 
 7.  Construct and record a confidence interval for the difference between the weights of those who exercise at least three times a week and those who don't, and interpret this interval in context of the data.
 
+# Exercise 7
+
+Mean
+
+```{r mean-physical-3plus}
+yrbss %>% 
+  filter(! is.na(physical_3plus)) %>%
+  group_by(physical_3plus) %>% 
+  summarise(mean_weight = mean(weight, na.rm = TRUE))
+
+```
+
+Standard Deviation
+
+```{r sd-physical-3plus}
+yrbss %>% 
+  filter(! is.na(physical_3plus)) %>%
+  group_by(physical_3plus) %>% 
+  summarise(sd_weight = sd(weight, na.rm = TRUE))
+```
+
+Sample size
+
+```{r sample-size}
+yrbss %>% 
+  filter(! is.na(physical_3plus)) %>%
+  group_by(physical_3plus) %>% 
+  summarise(freq = table(weight)) %>%
+  summarise(n = sum(freq))
+```
+
+
+```{r}
+mean_not_active <- 66.7
+sd_not_active <- 17.6
+n_not_active <- 4022
+
+mean_active <- 68.4
+sd_active <- 16.5
+n_active <- 8342
+
+z = 1.96
+
+#CI for those not active
+sqrt_n_not_active <- sqrt(n_not_active)
+sd_n_not_active_over_sqrt_n_not_active <- sd_not_active / sqrt_n_not_active
+
+upper_ci_not_act <- mean_not_active + z*(sd_n_not_active_over_sqrt_n_not_active)
+
+lower_ci_not_act <- mean_not_active - z*(sd_n_not_active_over_sqrt_n_not_active)
+
+#CI for those active
+sqrt_n_active <- sqrt(n_active)
+sd_n_active_over_sqrt_n_active <- sd_active / sqrt_n_active
+
+upper_ci_act <- mean_active + z*(sd_n_active_over_sqrt_n_active)
+
+lower_ci_act <- mean_active - z*(sd_n_active_over_sqrt_n_active)
+```
+
+```{r}
+sprintf("CI(not active): %f %f", lower_ci_not_act, upper_ci_not_act)
+sprintf("CI(active): %f %f", lower_ci_act, upper_ci_act)
+```
+
 * * *
 
 ## More Practice
 
 8.  Calculate a 95% confidence interval for the average height in meters (`height`) and interpret it in context.
 
+# Exercise 8
+
+```{r}
+z <- 1.96
+
+mean_height <- mean(yrbss$height, na.rm = TRUE)
+
+sd_height <- sd(yrbss$height, na.rm = TRUE)
+
+sample_height <- yrbss %>% 
+  summarise(freq = table(height)) %>%
+  summarise(n = sum(freq, na.rm = TRUE))
+
+height_upper_95 <- mean_height + z*(sd_height/sqrt(sample_height))
+
+height_lower_95 <- mean_height - z*(sd_height/sqrt(sample_height))
+
+```
+
+```{r}
+sprintf("95%% CI(Average Height): %f %f, Diff: %f", height_lower_95, height_upper_95, height_upper_95 - height_lower_95)
+```
+
 9.  Calculate a new confidence interval for the same parameter at the 90% confidence level. Comment on the width of this interval versus the one obtained in the previous exercise.
+
+# Exercise 9
+
+The width of the interval for 95% CI is wider than that for 90%.
+
+```{r}
+z <- 1.645
+    
+mean_height <- mean(yrbss$height, na.rm = TRUE)
+
+sd_height <- sd(yrbss$height, na.rm = TRUE)
+
+sample_height <- yrbss %>% 
+  summarise(freq = table(height)) %>%
+  summarise(n = sum(freq, na.rm = TRUE))
+
+height_upper_90 <- mean_height + z*(sd_height/sqrt(sample_height))
+
+height_lower_90 <- mean_height - z*(sd_height/sqrt(sample_height))
+
+
+```
+
+```{r}
+sprintf("90%% CI(Average Height): %f %f, Diff: %f", height_lower_90, height_upper_90, height_upper_90 - height_lower_90)
+```
 
 10.  Conduct a hypothesis test evaluating whether the average height is different for those who exercise at least three times a week and those who don't.
 
+# Exercise 10
+
+HO: There is no difference in average height of those who are physically active at least 3 days per week, and those who aren’t.  
+HA: There is a difference in average height of those who are physically active at least 3 days per week, and those who aren’t.
+
+```{r}
+obs_diff_ht <- yrbss %>%
+  filter(! is.na(height)) %>%
+  filter(! is.na(physical_3plus)) %>%
+  specify(height ~ physical_3plus) %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+```
+
+```{r}
+null_dist_ht <- yrbss %>%
+  filter(! is.na(height)) %>%
+  filter(! is.na(physical_3plus)) %>%
+  specify(height ~ physical_3plus) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+```
+
+
+```{r}
+ggplot(data = null_dist_ht, aes(x = stat)) +
+  geom_histogram()
+```
+
+
+```{r}
+yrbss %>% 
+  filter(! is.na(height)) %>%
+  filter(! is.na(physical_3plus)) %>%
+  group_by(physical_3plus) %>% 
+  summarise(mean_height = mean(height, na.rm = TRUE))
+```
+
+
+```{r}
+yrbss %>% 
+  filter(! is.na(height)) %>%
+  filter(! is.na(physical_3plus)) %>%
+  group_by(physical_3plus) %>% 
+  summarise(sd_height = sd(height, na.rm = TRUE))
+```
+
+
+```{r}
+yrbss %>% 
+  filter(! is.na(physical_3plus)) %>%
+  group_by(physical_3plus) %>% 
+  summarise(freq = table(height)) %>%
+  summarise(n = sum(freq))
+```
+
+```{r}
+z <- 1.96
+
+# Active
+mean_height_a <- 1.70
+samples_a <- 8342
+sd_height_a <- 0.103
+height_upper_a <- mean_height_a + z*(sd_height_a/sqrt(samples_a))
+height_lower_a <- mean_height_a - z*(sd_height_a/sqrt(samples_a))
+
+mean_height_na <- 1.67
+samples_na <- 4022
+sd_height_na<- 0.103
+height_upper_na <- mean_height_na + z*(sd_height_na/sqrt(samples_na))
+height_lower_na <- mean_height_na - z*(sd_height_na/sqrt(samples_na))
+
+```
+
+```{r}
+sprintf("95%% CI(Average Height of Active): %f %f, Diff: %f", height_lower_a, height_upper_a, height_upper_a - height_lower_a)
+```
+
+```{r}
+sprintf("95%% CI(Average Height of Not Active): %f %f, Diff: %f", height_lower_na, height_upper_na, height_upper_na - height_lower_na)
+```
+
+With a confidence level of 95%, the average height of students who are physically active at least 3 days/week, is between ~1.697m and 1.702m. The average height of students who are not physically active is between ~1.666m and ~1.673m.  
+
+Since the p-value is less than 0.05 we reject the null hypothesis and conclude that there is a difference in average height of those who are physically active at least 3 days per week, and those who aren’t.
+
+```{r}
+null_dist_ht %>%
+  get_p_value(obs_stat = obs_diff_ht, direction = "two_sided")
+```
+
 11.  Now, a non-inference task: Determine the number of different options there are in the dataset for the `hours_tv_per_school_day` there are.
 
+There are 7 options is the dataset for the `hours_tv_per_school_day` variable.
+
+```{r}
+yrbss %>%
+    filter(! is.na(hours_tv_per_school_day)) %>%
+    group_by(hours_tv_per_school_day)%>% 
+    summarise(n())
+```
+
 12. Come up with a research question evaluating the relationship between height or weight and sleep. Formulate the question in a way that it can be answered using a hypothesis test and/or a confidence interval. Report the statistical results, and also provide an explanation in plain language. Be sure to check all assumptions, state your $\alpha$ level, and conclude in context.
+
+Question: Is there evidence to support the hypothesis that students who are heavier than the mean weight sleep more than students who weight less than the mean weight?
+
+HO: Students who are heavier than the mean weight do not sleep more than students whose weight is less than the mean weight
+HA: Students who are heavier than the mean weight sleep more than students whose weight is less than the mean weight
+
+Assumptions: 
+1. Random sampling: check.
+1. Normality: sample size is large and CLT applies.
+
+$\alpha$: 0.05
+
+```{r}
+yrbss %>%group_by(school_night_hours_sleep)%>% summarise(n())
+```
+
+
+```{r}
+mean_wt <- yrbss %>%
+            filter(! is.na(weight)) %>%
+            filter(! is.na(school_night_hours_sleep)) %>%
+            summarise(mean = mean(weight)) %>%
+            pull(mean)
+mean_wt
+```
+
+We will make define sleeping less implies as less than 6 hours of sleep per night. Add sleeping less indicator to data frame.
+
+```{r}
+yrbss <- yrbss %>%
+    filter(! is.na(school_night_hours_sleep)) %>%
+    mutate(sleep_less_ind = ifelse(school_night_hours_sleep < 6, 'yes', 'no'))
+```
+
+Split up population weights into those who sleep less and those who don't.
+
+```{r}
+weight_sleep_less <- yrbss %>% 
+  filter(! is.na(weight)) %>%
+  filter(! is.na(sleep_less_ind)) %>%
+  filter(sleep_less_ind == "yes") %>%
+  select(weight)
+
+weight_sleep_more <- yrbss %>% 
+  filter(! is.na(weight)) %>%
+  filter(! is.na(sleep_less_ind)) %>%
+  filter(sleep_less_ind == "no") %>%
+  select(weight)
+
+```
+
+Boxplot population weights.
+
+```{r}
+boxplot(weight_sleep_less$weight, weight_sleep_more$weight,
+        names = c("less_sleep", "more_sleep"))
+```
+
+Compute summary stats for weight of those who sleep less.
+```{r}
+summary_weight_sleep_less <- summary(weight_sleep_less$weight)
+summary_weight_sleep_less
+```
+
+Compute summary stats for weight of those who sleep more.
+```{r}
+summary_weight_sleep_more <- summary(weight_sleep_more$weight)
+summary_weight_sleep_more
+```
+
+Compute sd, and diff in mean of those who sleep more and those who sleep less. Compute standard deviation
+```{r}
+mean_diff <- summary_weight_sleep_more["Mean"] - summary_weight_sleep_less["Mean"]
+sd <- 
+  sqrt(
+  ((summary_weight_sleep_more["Mean"]^2) / nrow(weight_sleep_more)) +
+  ((summary_weight_sleep_less["Mean"]^2) / nrow(weight_sleep_less))
+  )
+```
+
+Compute t-dist and confidence intervals.
+
+```{r}
+degrees_of_freedom <- NROW(weight_sleep_less) - 1
+
+t <- qt(0.05/2, df = degrees_of_freedom, lower.tail = FALSE)
+
+lower_ci <- mean_diff - t * sd
+upper_ci <- mean_diff + t * sd
+sprintf("CI: %f %f, Diff: %f", lower_ci, upper_ci, upper_ci - lower_ci)
+```
+
+Compute `p_val`. Since `p_val` is equal to significance level (0.05), the null hypothesis can be rejected.
+
+```{r}
+p_val <- 2 * pt(t, degrees_of_freedom, lower.tail = FALSE)
+p_val
+```
 
 * * *
