@@ -11,6 +11,7 @@ output:
 library(tidyverse)
 library(ggplot2)
 library(infer)
+library(ggstatsplot)
 ```
 
 
@@ -41,43 +42,49 @@ df <- read_csv(file = "https://raw.githubusercontent.com/himalayahall/CUNY-DATA6
 ```
 
 ```{r mutate-data, include=FALSE, message=FALSE, warning=FALSE}
-df$received_callback_cat <- recode_factor(df$received_callback, `0` = "No",  `1` = 'Yes')
+df$received_callback_cat <- recode_factor(df$received_callback, `0` = 'No',  `1` = 'Yes')
 df <- df |> select(-job_ad_id)
 ```
 
 # Introduction
 
-Researchers randomly generated realistic resumes to send to job postings in Boston and Chicago. They then randomly assigned a *first name* to the resume that would communicate the race and gender of the application.  
+-   Researchers randomly generated realistic resumes to send to job postings in Boston and Chicago.
 
-First names for the study were selected so that the names would predominantly be recognized as belonging to black or white individuals.  
+-   They then randomly assigned a *first name* to the resume that would communicate the race and gender of the applicant.
 
-1. All other factors being equal does the perceived **race** of applicants have a meaningful impact on the callback rate?
+-   First names for the study were selected so that the names would predominantly be recognized as belonging to **black** or **white** individuals.
 
+**Research Question**: Does the perceived **race** of applicants have a meaningful impact on the **callback rate**?
 
-# Data - [OpenIntro](https://www.openintro.org/data/index.php?data=resume). 
+# Data - [OpenIntro](https://www.openintro.org/data/index.php?data=resume).
 
+1.  Each of the 4870 cases represents a randomly generated resume
+2.  This was an **experiment** conducted over several months during 2001 and 2002 in Boston and Chicago
+3.  Categorical response variable is $received\_callback$
+4.  Categorical explanatory variable is $race$
 
-1. Each case represents a randomly generated resumes There are 4870 cases.
-1. This was an **experiment** conducted over several months during 2001 and 2002 in Boston and Chicago.
-1. The categorical response variable is the **received_callback**
-1. The categorical explanatory (predictor) variable is the **race**
+# Callback Proportions
 
-# Exploratory data analysis
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+set.seed(123)
+
+grouped_ggbarstats(
+  data         = df,
+  x            = race,
+  y            = received_callback_cat,
+  grouping.var = received_callback_cat,
+  package      = "wesanderson",
+  palette      = "Darjeeling2",
+  label = 'both'
+)
+```
+
 
 ```{r set-seed, include=FALSE, message=FALSE, warning=FALSE}
 set.seed(1234)
 ```
 
-Of all applicants who received a callback, 60% were perceived to be White and 40% were perceived to be Black
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-df |> 
-    filter(received_callback_cat == 'Yes') |> 
-    count(race) |> 
-    mutate(p = n / sum(n))
-```
-
-# Sample proportion
+# Calculate sample proportion
 
 ```{r compute-sample-props, message=FALSE, warning=FALSE}
 sample_props <- df |>
@@ -86,10 +93,10 @@ sample_props <- df |>
                                  replace = TRUE) |>
                     count(received_callback_cat) |>
                     mutate(p_hat = n /sum(n)) |>
-                    filter(received_callback_cat == 'Yes')
+                    filter(received_callback_cat == "Yes")
 ```
 
-# Plot sample proportion
+# Sample proportion
 
 ```{r plot-sample-props, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Sample Proportion"}
 ggplot(data = sample_props, aes(x = p_hat)) +
@@ -97,45 +104,62 @@ ggplot(data = sample_props, aes(x = p_hat)) +
 
 ```
 
-# Hypothesis
-
-$H_0$: there is no difference in callback proportion between candidates who are perceived to be white and those perceived to be black  
-$H_A$: candidates who are white are more likely to receive callback
+# Confidence Interval
 
 95% Confidence Interval for the sample proportion:
 
 ```{r compute-ci, echo=FALSE, message=FALSE, warning=FALSE}
-df |>
+ci <- df |>
   specify(response = received_callback_cat, success = 'Yes') |>
   generate(reps = 1000, type = 'bootstrap') |>
   calculate(stat = 'prop') |>
   get_ci(level = 0.95)
+print(ci)
 ```
+
+# Independence hypothesis test
+
+$H_0$: there is no difference in callback proportion between candidates who are perceived to be white and those perceived to be black
+
+$H_A$: candidates who are white are more likely to receive callback
 
 # Chi-square Testing framework
 
 Assumptions for using Chi-square:
 
-1. Both variables are categorical
-1. Observations are independent
-1. Individuals can only belong to one cell in the contingency table. That is, cells in the table are mutually exclusive – an individual cannot belong to more than one cell
-1. There must be at least 5 frequencies in each cell
+1.  Both variables are categorical
+2.  Observations are independent
+3.  Individuals can only belong to one cell in the contingency table. That is, cells in the table are mutually exclusive -- an individual cannot belong to more than one cell
+4.  There must be at least 5 frequencies in each cell
 
-Our dataset satisfies all above assumptions.  
+Our dataset satisfies all above assumptions.
 
 # Compute Chi-square
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
-observed_ind_stat <- df |>
+obs_indep_stat <- df |>
     specify(received_callback_cat ~ race, 
             success = 'Yes') |>
     hypothesize(null = 'independence') |>
     calculate(stat = 'Chisq', c('white', 'black'))
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-observed_ind_stat
+
+```{r echo=FALSE}
+# ggbarstats(
+#   data = df,
+#   x = received_callback_cat,
+#   y = race,
+# grouping.var = race
+# ) +
+#   labs(caption = NULL) # remove caption
 ```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+obs_indep_stat
+```
+
 
 # Compute null distribution
 
@@ -152,61 +176,55 @@ null_dist_sim <- df |>
             c('white', 'black'))
 ```
 
-# Plot null distribution
+# Null distribution plot with observed stat and confidence internal
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
 null_dist_sim |>
-  visualize(method = 'both') + 
-  shade_p_value(observed_ind_stat,
-                direction = 'greater')
+  visualize(method = 'both') +  
+  shade_p_value(obs_stat = obs_indep_stat,
+                direction = NULL)
 ```
 
-Plot of null distribution shows that the observed test statistic would be unlikely if there was no association between $race$ and $callback\_rate$. So we reject $H_0$ in favor $H_A$.
+Plot of the null distribution shows the observed test statistic would be unlikely if there was no association between $race$ and $callback\_rate$. So we reject $H_0$ in favor $H_A$.
 
-# Another Plot
+# Other Variables
 
-```{r echo=FALSE}
-library(ggstatsplot)
+This study looked at $race$ as the explanatory variable. However, the dataset contains other variables (see below) that may be relevant. A multiple regression model could be used to identify combinations of explanatory variables.
 
-# plot
-ggbarstats(
-  data = df,
-  x = received_callback_cat,
-  y = race
-) +
-  labs(caption = NULL) # remove caption
+1.  Gender
+2.  Resume Quality
+3.  Computer Skills
+4.  Volunteer
+5.  Honors
+6.  ...
+
+# Generalized linear model
+
+``` {style="color:red"}
+                    Estimate Std. Error z value Pr(>|z|)    
+(Intercept)          -1.9350     0.1545 -12.525  < 2e-16 ***
+genderm              -0.1785     0.1337  -1.335   0.1818    
+resume_quality.L      0.2243     0.1178   1.904   0.0569 .  
+computer_skillsTRUE  -0.3433     0.1386  -2.478   0.0132 *  
+volunteerTRUE        -0.1305     0.1637  -0.797   0.4253    
+honorsTRUE            0.7819     0.1819   4.299 1.72e-05 ***
+raceblack            -0.4298     0.1078  -3.988 6.65e-05 ***
 ```
 
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
-# p_value_independence <- null_dist_sim |>
-#    get_p_value(obs_stat = observed_ind_stat,
-#                direction = 'greater')
-#  p_value_independence
+mlm <- glm(received_callback ~ gender + resume_quality + computer_skills + volunteer + honors + race, data = df, family = binomial(link = 'logit'))
+summary(mlm)
 ```
-
-```{r include=FALSE, message=FALSE, warning=FALSE}
-# df <- df |> mutate(num_received_callback = ifelse(received_callback == 'Yes', 1, 0))
-# mlm <- lm(num_received_callback ~ college_degree + resume_quality + volunteer + computer_skills + years_experience + honors + gender + race, data = df)
-# summary(mlm)
-```
-
-```{r include=FALSE, message=FALSE, warning=FALSE}
-# mlm2 <- lm(num_received_callback ~  resume_quality + computer_skills + years_experience + honors + race, data = df)
-# summary(mlm2)
-```
-
-# Conclusion
-
-Many biases have been identified in the job market over the years. As a result, HR professionals recommend not including age, religion, nationality, sexual orientation, etc. in job applications.  
-This study identified the applicant's first name as a potential source of bias (!). It should raise awareness among the HR profession regarding subtle biases they have to be aware of and (hopefully) compensate against.  
 
 # Limitations
 
-This analysis looked at just $race$ as the explanatory variable. However, the dataset contains other variables (see below) that may have an impact on the $callback\_rate$. A multiple regression model could be used to identify combinations of explanatory variables.
+This study was originally conducted in 2001 and 2002 in Chicago and Boston. Over the last 20 years there has been an increase in awareness of biases The data needs to be refreshed and more cities should be included in the study to eliminate potential regional biases.
 
-1. Gender
-1. Resume Quality
-1. Computer Skills
-1. Years of Experience
+# Conclusion
 
+Many biases have been identified in the job market over the years. As a result, HR professionals recommend not including age, religion, nationality, sexual orientation, etc. in job applications.
+
+This study identified the applicant's first name as a potential source of bias (!), which should raise red flags for HR professionals, job applicants, and hiring managers.
+
+One hopes such studies will raise awareness regarding subtle biases in hiring practices and the need for training and diligence to overcome such biases.
