@@ -45,7 +45,7 @@ df$received_callback_cat <- recode_factor(df$received_callback, `0` = "No",  `1`
 df <- df |> select(-job_ad_id)
 ```
 
-# Overview
+# Introduction
 
 Researchers randomly generated realistic resumes to send to job postings in Boston and Chicago. They then randomly assigned a *first name* to the resume that would communicate the race and gender of the application.  
 
@@ -62,7 +62,7 @@ First names for the study were selected so that the names would predominantly be
 1. The categorical response variable is the **received_callback**
 1. The categorical explanatory (predictor) variable is the **race**
 
-# Summary Statistics
+# Exploratory data analysis
 
 ```{r set-seed, include=FALSE, message=FALSE, warning=FALSE}
 set.seed(1234)
@@ -77,7 +77,7 @@ df |>
     mutate(p = n / sum(n))
 ```
 
-# Compute sample proportion
+# Sample proportion
 
 ```{r compute-sample-props, message=FALSE, warning=FALSE}
 sample_props <- df |>
@@ -163,7 +163,7 @@ null_dist_sim |>
 
 Plot of null distribution shows that the observed test statistic would be unlikely if there was no association between $race$ and $callback\_rate$. So we reject $H_0$ in favor $H_A$.
 
-# Plot
+# Another Plot
 
 ```{r echo=FALSE}
 library(ggstatsplot)
@@ -179,10 +179,10 @@ ggbarstats(
 
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
-p_value_independence <- null_dist_sim |>
-   get_p_value(obs_stat = observed_ind_stat,
-               direction = 'greater')
- p_value_independence
+# p_value_independence <- null_dist_sim |>
+#    get_p_value(obs_stat = observed_ind_stat,
+#                direction = 'greater')
+#  p_value_independence
 ```
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
