@@ -196,6 +196,11 @@ ggbarstats(
 # summary(mlm2)
 ```
 
+# Conclusion
+
+Many biases have been identified in the job market over the years. As a result, HR professionals recommend not including age, religion, nationality, sexual orientation, etc. in job applications.  
+This study identified the applicant's first name as a potential source of bias (!). It should raise awareness among the HR profession regarding subtle biases they have to be aware of and (hopefully) compensate against.  
+
 # Limitations
 
 This analysis looked at just $race$ as the explanatory variable. However, the dataset contains other variables (see below) that may have an impact on the $callback\_rate$. A multiple regression model could be used to identify combinations of explanatory variables.
