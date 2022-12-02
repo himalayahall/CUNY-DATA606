@@ -14,7 +14,6 @@ library(infer)
 library(ggstatsplot)
 ```
 
-
 ```{r setup, include=FALSE, message=FALSE, warning=FALSE}
 df <- read_csv(file = "https://raw.githubusercontent.com/himalayahall/CUNY-DATA606/master/Project/resume_callback.csv",
                col_types = cols(
@@ -78,7 +77,6 @@ grouped_ggbarstats(
   label = 'both'
 )
 ```
-
 
 ```{r set-seed, include=FALSE, message=FALSE, warning=FALSE}
 set.seed(1234)
@@ -144,7 +142,6 @@ obs_indep_stat <- df |>
     calculate(stat = 'Chisq', c('white', 'black'))
 ```
 
-
 ```{r echo=FALSE}
 # ggbarstats(
 #   data = df,
@@ -155,18 +152,16 @@ obs_indep_stat <- df |>
 #   labs(caption = NULL) # remove caption
 ```
 
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 obs_indep_stat
 ```
 
-
-# Compute null distribution
+# Simulated null distribution
 
 The null distribution is what we would expect to see if the response and explanatory variables were truly independent.
 
 ```{r message=FALSE, warning=FALSE}
-null_dist_sim <- df |>
+sim_null_dist <- df |>
   specify(received_callback_cat ~ race, 
           success = 'Yes') |>
   hypothesize(null = 'independence') |>
@@ -179,7 +174,7 @@ null_dist_sim <- df |>
 # Null distribution plot with observed stat and confidence internal
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
-null_dist_sim |>
+sim_null_dist |>
   visualize(method = 'both') +  
   shade_p_value(obs_stat = obs_indep_stat,
                 direction = NULL)
@@ -200,7 +195,7 @@ This study looked at $race$ as the explanatory variable. However, the dataset co
 
 # Generalized linear model
 
-``` {style="color:red"}
+``` {}
                     Estimate Std. Error z value Pr(>|z|)    
 (Intercept)          -1.9350     0.1545 -12.525  < 2e-16 ***
 genderm              -0.1785     0.1337  -1.335   0.1818    
@@ -210,7 +205,6 @@ volunteerTRUE        -0.1305     0.1637  -0.797   0.4253
 honorsTRUE            0.7819     0.1819   4.299 1.72e-05 ***
 raceblack            -0.4298     0.1078  -3.988 6.65e-05 ***
 ```
-
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
 mlm <- glm(received_callback ~ gender + resume_quality + computer_skills + volunteer + honors + race, data = df, family = binomial(link = 'logit'))
