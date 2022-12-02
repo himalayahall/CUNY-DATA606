@@ -213,7 +213,7 @@ summary(mlm)
 
 # Limitations
 
-This study was originally conducted in 2001 and 2002 in Chicago and Boston. Over the last 20 years there has been an increase in awareness of biases The data needs to be refreshed and more cities should be included in the study to eliminate potential regional biases.
+This study was originally conducted in 2001 and 2002 in Chicago and Boston. Over the last 20 years there has been increasing awareness of bias in hiring practices. The data needs to be refreshed and more cities should be included in the study to eliminate potential regional biases.
 
 # Conclusion
 
@@ -221,4 +221,4 @@ Many biases have been identified in the job market over the years. As a result, 
 
 This study identified the applicant's first name as a potential source of bias (!), which should raise red flags for HR professionals, job applicants, and hiring managers.
 
-One hopes such studies will raise awareness regarding subtle biases in hiring practices and the need for training and diligence to overcome such biases.
+One hopes such studies will lead to even greater awareness regarding subtle biases in hiring practices and the need for training and due diligence that is necessary to overcome such biases.
