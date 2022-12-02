@@ -190,24 +190,22 @@ This study looked at $race$ as the explanatory variable. However, the dataset co
 2.  Resume Quality
 3.  Computer Skills
 4.  Volunteer
-5.  Honors
-6.  ...
+5.  ...
 
 # Generalized linear model
 
 ``` {}
                     Estimate Std. Error z value Pr(>|z|)    
-(Intercept)          -1.9350     0.1545 -12.525  < 2e-16 ***
-genderm              -0.1785     0.1337  -1.335   0.1818    
-resume_quality.L      0.2243     0.1178   1.904   0.0569 .  
-computer_skillsTRUE  -0.3433     0.1386  -2.478   0.0132 *  
-volunteerTRUE        -0.1305     0.1637  -0.797   0.4253    
-honorsTRUE            0.7819     0.1819   4.299 1.72e-05 ***
-raceblack            -0.4298     0.1078  -3.988 6.65e-05 ***
+(Intercept)         -1.8120     0.1499 -12.091  < 2e-16 ***
+genderm             -0.1919     0.1334  -1.439    0.150    
+resume_quality.L     0.3022     0.1157   2.612    0.009 ** 
+computer_skillsTRUE -0.3787     0.1378  -2.748    0.006 ** 
+volunteerTRUE       -0.2168     0.1617  -1.340    0.180    
+raceblack           -0.4307     0.1075  -4.006 6.18e-05 ***
 ```
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
-mlm <- glm(received_callback ~ gender + resume_quality + computer_skills + volunteer + honors + race, data = df, family = binomial(link = 'logit'))
+mlm <- glm(received_callback ~ gender + resume_quality + computer_skills + volunteer +race, data = df, family = binomial(link = 'logit'))
 summary(mlm)
 ```
 
