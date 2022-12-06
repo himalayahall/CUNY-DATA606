@@ -47,22 +47,27 @@ df <- df |> select(-job_ad_id)
 
 # Introduction
 
--   Researchers randomly generated realistic resumes to send to job postings in Boston and Chicago.
+-   Data comes from a study that sought to understand the influence of race (and gender) on job application callback rates
 
--   They then randomly assigned a *first name* to the resume that would communicate the race and gender of the applicant.
+-   Researchers monitored job postings in Boston and Chicago during 2001 and 2002
 
--   First names for the study were selected so that the names would predominantly be recognized as belonging to **black** or **white** individuals.
+-   Randomly generated resumes to send to job postings
+
+-   Randomly assigned a *name* to the resume that would communicate the race and gender of the applicant
+
+-   First names for the study were selected that would predominantly be recognized as belonging to **black** or **white** individuals
 
 **Research Question**: Does the perceived **race** of applicants have a meaningful impact on the **callback rate**?
 
-# Data - [OpenIntro](https://www.openintro.org/data/index.php?data=resume).
+# Data
 
-1.  Each of the 4870 cases represents a randomly generated resume
-2.  This was an **experiment** conducted over several months during 2001 and 2002 in Boston and Chicago
-3.  Categorical response variable is $received\_callback$
-4.  Categorical explanatory variable is $race$
+- [OpenIntro - Which resume attributes drive job callbacks?](https://www.openintro.org/data/index.php?data=resume)
+- This was an **experiment** conducted over several months during 2001 and 2002 in Boston and Chicago
+- Each of the cases (4870) represents a randomly generated resume
+- Categorical response variable is $received\_callback$
+- Categorical explanatory variable is $race$
 
-# Callback Proportions
+# Callback Proportions - Group by Callback Rate
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 set.seed(123)
@@ -78,6 +83,21 @@ grouped_ggbarstats(
 )
 ```
 
+# Callback Proportions - Group by Race
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+set.seed(123)
+
+grouped_ggbarstats(
+  data         = df,
+  x            = received_callback_cat,
+  y            = race,
+  grouping.var = race,
+  package      = "wesanderson",
+  palette      = "Darjeeling2",
+  label = 'both'
+)
+```
 ```{r set-seed, include=FALSE, message=FALSE, warning=FALSE}
 set.seed(1234)
 ```
@@ -96,17 +116,15 @@ sample_props <- df |>
 
 # Sample proportion
 
-```{r plot-sample-props, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Sample Proportion"}
+```{r plot-sample-props, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Sample Prop - Received Callback"}
 ggplot(data = sample_props, aes(x = p_hat)) +
   geom_histogram(binwidth = 0.005)
 
 ```
 
-# Confidence Interval
+# Sample Proportion - 95% Confidence Interval
 
-95% Confidence Interval for the sample proportion:
-
-```{r compute-ci, echo=FALSE, message=FALSE, warning=FALSE}
+```{r compute-ci, message=FALSE, warning=FALSE}
 ci <- df |>
   specify(response = received_callback_cat, success = 'Yes') |>
   generate(reps = 1000, type = 'bootstrap') |>
@@ -117,9 +135,9 @@ print(ci)
 
 # Independence hypothesis test
 
-$H_0$: there is no difference in callback proportion between candidates who are perceived to be white and those perceived to be black
+$H_0$: assumes there is no association between callback rate and the perceived race of the candidate
 
-$H_A$: candidates who are white are more likely to receive callback
+$H_A$: assumes there is an association between the callback rate and perceived race of the candidate
 
 # Chi-square Testing framework
 
@@ -132,14 +150,15 @@ Assumptions for using Chi-square:
 
 Our dataset satisfies all above assumptions.
 
-# Compute Chi-square
+# Observed Chi-square
 
-```{r include=FALSE, message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE}
 obs_indep_stat <- df |>
     specify(received_callback_cat ~ race, 
             success = 'Yes') |>
     hypothesize(null = 'independence') |>
-    calculate(stat = 'Chisq', c('white', 'black'))
+    calculate(stat = 'Chisq', 
+              c('white', 'black'))
 ```
 
 ```{r echo=FALSE}
@@ -153,7 +172,7 @@ obs_indep_stat <- df |>
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-obs_indep_stat
+obs_indep_stat$stat
 ```
 
 # Simulated null distribution
@@ -171,7 +190,7 @@ sim_null_dist <- df |>
             c('white', 'black'))
 ```
 
-# Null distribution plot with observed stat and confidence internal
+# Null distribution plot with observed stat
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
 sim_null_dist |>
@@ -180,7 +199,7 @@ sim_null_dist |>
                 direction = NULL)
 ```
 
-Plot of the null distribution shows the observed test statistic would be unlikely if there was no association between $race$ and $callback\_rate$. So we reject $H_0$ in favor $H_A$.
+Plot of the null distribution shows the observed test statistic would be unlikely if there was no association between $race$ and $callback\_rate$. Consequently, we reject $H_0$ in favor $H_A$.
 
 # Other Variables
 
@@ -219,4 +238,4 @@ Many biases have been identified in the job market over the years. As a result, 
 
 This study identified the applicant's first name as a potential source of bias (!), which should raise red flags for HR professionals, job applicants, and hiring managers.
 
-One hopes such studies will lead to even greater awareness regarding subtle biases in hiring practices and the need for training and due diligence that is necessary to overcome such biases.
+One hopes such studies will lead to greater awareness regarding subtle biases in hiring practices and the need for training and due diligence to overcome such biases.
